@@ -1,0 +1,814 @@
+//
+//  myextensions.swift
+ 
+//  Created by VenkatesanMACBook on 18/10/22.
+//  Copyright © 2022 N.S.Venkatesan. All rights reserved.
+//
+
+import Foundation
+import UIKit
+
+
+ extension UIView {
+   public var safeAreaFrame: CGRect {
+       if #available(iOS 11, *) {
+           return safeAreaLayoutGuide.layoutFrame
+       }
+       return bounds
+   }
+ 
+        func applyGradient(colours: [UIColor], locations: [NSNumber]?) -> CAGradientLayer {
+            let gradient: CAGradientLayer = CAGradientLayer()
+            gradient.frame = self.bounds
+            gradient.colors = colours.map { $0.cgColor }
+            gradient.locations = locations
+            self.layer.insertSublayer(gradient, at: 0)
+            return gradient
+        }
+         
+             private static let kLayerNameGradientBorder = "GradientBorderLayer"
+             func gradientBorder(width: CGFloat,
+                                colors: [UIColor],
+                                startPoint: CGPoint = CGPoint(x: 0.5, y: 0.0),
+                                endPoint: CGPoint = CGPoint(x: 0.5, y: 1.0),
+                                andRoundCornersWithRadius cornerRadius: CGFloat = 0) {
+
+                let existingBorder = gradientBorderLayer()
+                let border = existingBorder ?? CAGradientLayer()
+                border.frame = CGRect(x: bounds.origin.x, y: bounds.origin.y,
+                                      width: bounds.size.width + width, height: bounds.size.height + width)
+                border.colors = colors.map { return $0.cgColor }
+                border.startPoint = startPoint
+                border.endPoint = endPoint
+
+                let mask = CAShapeLayer()
+                let maskRect = CGRect(x: bounds.origin.x + width/2, y: bounds.origin.y + width/2,
+                                      width: bounds.size.width - width, height: bounds.size.height - width)
+                mask.path = UIBezierPath(roundedRect: maskRect, cornerRadius: cornerRadius).cgPath
+                mask.fillColor = UIColor.clear.cgColor
+                mask.strokeColor = UIColor.white.cgColor
+                mask.lineWidth = width
+
+                border.mask = mask
+
+                let exists = (existingBorder != nil)
+                if !exists {
+                    layer.addSublayer(border)
+                }
+            }
+            private func gradientBorderLayer() -> CAGradientLayer? {
+                let borderLayers = layer.sublayers?.filter { return $0.name == UIView.kLayerNameGradientBorder }
+                if borderLayers?.count ?? 0 > 1 {
+                    fatalError()
+                }
+                return borderLayers?.first as? CAGradientLayer
+            }
+        /*
+         case .topLeft:      return CGPoint(x: 0.0, y: 0.0)
+             case .top:          return CGPoint(x: 0.5, y: 0.0)
+             case .topRight:     return CGPoint(x: 1.0, y: 0.0)
+             case .right:        return CGPoint(x: 0.0, y: 0.5)
+             case .bottomRight:  return CGPoint(x: 1.0, y: 1.0)
+             case .bottom:       return CGPoint(x: 0.5, y: 1.0)
+             case .bottomLeft:   return CGPoint(x: 0.0, y: 1.0)
+             case .left:         return CGPoint(x: 1.0, y: 0.5)
+         */
+     
+    func addRoundedCornerToView(targetView : UIView?)
+    {
+        //UIView Corner Radius
+        targetView!.layer.cornerRadius = 5.0;
+        targetView!.layer.masksToBounds = true
+
+        //UIView Set up boarder
+        targetView!.layer.borderColor = UIColor.yellow.cgColor;
+        targetView!.layer.borderWidth = 3.0;
+
+        //UIView Drop shadow
+        targetView!.layer.shadowColor = UIColor.darkGray.cgColor;
+        targetView!.layer.shadowOffset =  CGSize(width: 2.0, height: 2.0)
+ 
+        targetView!.layer.shadowOpacity = 1.0
+    }
+     
+        func addShadow(shadowColor: UIColor, offSet: CGSize, opacity: Float, shadowRadius: CGFloat, cornerRadius: CGFloat, corners: UIRectCorner, fillColor: UIColor = .white) {
+            
+            let shadowLayer = CAShapeLayer()
+            let size = CGSize(width: cornerRadius, height: cornerRadius)
+            let cgPath = UIBezierPath(roundedRect: self.bounds, byRoundingCorners: corners, cornerRadii: size).cgPath //1
+            shadowLayer.path = cgPath //2
+            shadowLayer.fillColor = fillColor.cgColor //3
+            shadowLayer.shadowColor = shadowColor.cgColor //4
+            shadowLayer.shadowPath = cgPath
+            shadowLayer.shadowOffset = offSet //5
+            shadowLayer.shadowOpacity = opacity
+            shadowLayer.shadowRadius = shadowRadius
+            self.layer.addSublayer(shadowLayer)
+        }
+ 
+   /*  func viewshadow()
+    {
+      self
+        .layer.cornerRadius = 15
+        UIView.clipsToBounds = true
+        UIView.layer.masksToBounds = false
+        UIView.layer.borderWidth = 2.0
+     //   view.layer.backgroundColor = UIColor.
+        UIView.layer.shadowRadius = 7
+        UIView.layer.shadowOpacity = 0.6
+        UIView.layer.shadowOffset = CGSize(width: 0, height: 5)
+        UIView.layer.shadowColor = UIColor.gray.cgColor
+ }
+*/
+    
+  }
+ 
+extension UIButton {
+ 
+    func alignContentVerticallyByCenter(offset:CGFloat = 10) {
+        let buttonSize = frame.size
+
+        if let titleLabel = titleLabel,
+            let imageView = imageView {
+
+            if let buttonTitle = titleLabel.text,
+                let image = imageView.image {
+                let titleString:NSString = NSString(string: buttonTitle)
+                let titleSize = titleString.size(withAttributes: [
+                    NSAttributedString.Key.font : titleLabel.font
+                    ])
+                let buttonImageSize = image.size
+
+                let topImageOffset = (buttonSize.height - (titleSize.height + buttonImageSize.height + offset)) / 2
+                let leftImageOffset = (buttonSize.width - buttonImageSize.width) / 2
+                imageEdgeInsets = UIEdgeInsets(top: topImageOffset,
+                                               left: leftImageOffset,
+                                               bottom: 0,right: 0)
+
+                let titleTopOffset = topImageOffset + offset + buttonImageSize.height
+                let leftTitleOffset = (buttonSize.width - titleSize.width) / 2 - image.size.width
+
+                titleEdgeInsets = UIEdgeInsets(top: titleTopOffset,
+                                               left: leftTitleOffset,
+                                               bottom: 0,right: 0)
+            }
+        }
+    }
+}
+
+extension NSAttributedString {
+   
+   class func attributedString(_ string: String, font: UIFont, color: UIColor, paragraphStyle: NSParagraphStyle, otherAttributes: [String : Any]?) -> NSAttributedString {
+       
+       var att : [NSAttributedString.Key : Any] = [
+           .font : font,
+           .foregroundColor : color,
+           .paragraphStyle : paragraphStyle
+       ]
+       
+       if let otherAttributes = otherAttributes
+       {
+           for (key, value) in otherAttributes
+           {
+               att.updateValue(value, forKey: NSAttributedString.Key(rawValue: key))
+           }
+       }
+       
+       let astr = NSMutableAttributedString(string: string, attributes: att)
+       return astr
+   }
+   
+   func addAttributes(attributes: [NSAttributedString.Key : Any]) -> NSAttributedString {
+       let astr = self.mutableCopy() as! NSMutableAttributedString
+       astr.addAttributes(attributes, range: NSMakeRange(0, length))
+       return astr as NSAttributedString
+   }
+}
+ extension String {
+    func separate(every stride: Int, with separator: Character = " ") -> String {
+        return String(enumerated().map { $0 > 0 && $0 % stride == 0 ? [separator, $1] : [$1]}.joined())
+    }
+ 
+   func replace(string:String, replacement:String) -> String {
+       return self.replacingOccurrences(of: string, with: replacement, options: NSString.CompareOptions.literal, range: nil)
+   }
+
+   func removeWhitespace() -> String {
+       return self.replace(string: " ", replacement: "")
+   }
+   
+   func removestrartingwhitespace() -> String
+   {
+       var fstr:String!
+       if let regexp = try? NSRegularExpression(pattern: "^\\s+", options: NSRegularExpression.Options.caseInsensitive) {
+           let mstr = NSMutableString(string: self)
+           regexp.replaceMatches(in: mstr, options: [], range: NSRange(location: 0, length: self.count), withTemplate: "")
+           fstr = mstr as String
+        }
+       return fstr
+   }
+   /// EZSE: Converts String to Double
+   public func toDouble() -> Double?
+   {
+       if let num = NumberFormatter().number(from: self) {
+           return num.doubleValue
+       } else {
+           return nil
+       }
+   }
+}
+
+public func datecompare(date1:String,date2:String) -> String
+{
+    var date1str = date1
+    var date2str = date2
+    var check = 0
+    let date = Date()
+    let formatter = DateFormatter()
+     formatter.dateFormat = "dd/MM/yy"
+      let currentDate = formatter.string(from: date)
+ 
+    if(date1.count <= 0 && date1 == "" )
+    {
+        date1str = currentDate
+        check = 1
+    }
+    if(date2.count <= 0 && date2 == "" )
+    {
+        date2str = currentDate
+        check = 2
+    }
+    let firstDate = formatter.date(from: date1str)
+    let secondDate = formatter.date(from: date2str)
+   
+    if(check == 0)
+    {
+        if firstDate?.compare(secondDate!) == .orderedSame {
+            return "same"
+        }
+        else if firstDate?.compare(secondDate!) == .orderedAscending {
+            return "firstsmall"
+        }
+        else if firstDate?.compare(secondDate!) == .orderedDescending {
+            return "firstgreater"
+        }
+        else{
+            return "notvalidate"
+        }
+    }
+    else if(check == 1)
+    {
+        return "firstsmall"
+    }
+    else if(check == 2)
+    {
+        return "firstgreater"
+    }
+    else
+    {
+        return "notvalidate"
+    }
+}
+
+public func timetosec(time:String) -> Int
+{
+    let totalsec:Int!
+    let components: Array = time.components(separatedBy: ":")
+    if(components.count > 2)
+    {
+        let hours = Int(components[0])!
+        let minutes = Int(components[1])!
+        let seconds = Int(components[2])!
+         totalsec =  Int((hours * 60 * 60) + Int(minutes * 60) + seconds)
+        return totalsec
+    }
+    else{
+        return 0
+    }
+}
+
+public func leadzero(digit:String,value:String) -> String
+{
+      let valint = Int(value)
+    let zeroadd = String(format: "%0\(digit)d", valint ?? 0 )
+     return zeroadd
+}
+
+ public func leftPadding(valueString: String, toLength: Int, withPad: String = " ") -> String
+{
+   var valueString2 : String!
+  if (valueString.contains(".")) {
+     valueString2 = valueString
+  }
+  else
+  {
+       valueString2 = String(format: "%@.0", valueString)
+  }
+  
+       guard toLength > valueString2.count else { return valueString2 }
+      
+      let padding = String(repeating: withPad, count: toLength - valueString2.count)
+         return  padding + valueString2
+
+  }
+ 
+import UIKit
+
+extension UITableView {
+
+    func setEmptyMessage(_ message: String) {
+        let messageLabel = UILabel(frame: CGRect(x: 0, y: 0, width: self.bounds.size.width, height: self.bounds.size.height))
+        messageLabel.text = message
+        messageLabel.textColor = .black
+        messageLabel.numberOfLines = 0
+        messageLabel.textAlignment = .center
+        messageLabel.font = UIFont(name: "TrebuchetMS", size: 15)
+        messageLabel.sizeToFit()
+
+        self.backgroundView = messageLabel
+        self.separatorStyle = .none
+    }
+
+    func restore() {
+        self.backgroundView = nil
+        self.separatorStyle = .singleLine
+    }
+}
+extension Date {
+
+   func dateInTimeZone(timeZoneIdentifier: String, dateFormat: String) -> String {
+     let dtf = DateFormatter()
+     dtf.timeZone = TimeZone(identifier: timeZoneIdentifier)
+     dtf.dateFormat = dateFormat
+
+     return dtf.string(from: self)
+ }
+}
+extension RangeReplaceableCollection where Self: StringProtocol {
+    var digits: Self { filter(\.isWholeNumber) }
+}
+extension RangeReplaceableCollection where Self: StringProtocol {
+    mutating func removeAllNonNumeric() {
+        removeAll { !$0.isWholeNumber }
+    }
+}
+//Date().dateInTimeZone(timeZoneIdentifier: "UTC", dateFormat: "yyyy-MM-dd HH:mm:ss");
+ 
+extension UIViewController {
+    func showToast(message: String) {
+        guard let window = UIApplication.shared.keyWindow else {
+            return
+        }
+        
+        let toastLbl = UILabel()
+        toastLbl.text = message
+        toastLbl.textAlignment = .center
+        toastLbl.font = UIFont.systemFont(ofSize: 18)
+        toastLbl.textColor = UIColor.white
+        toastLbl.backgroundColor = .systemGreen //UIColor(red: 15/255, green: 138/255.0, blue: 209/255.0, alpha: 1.0).withAlphaComponent(0.6)
+       // UIColor.black.withAlphaComponent(0.6)
+        toastLbl.numberOfLines = 0
+        
+        
+        let textSize = toastLbl.intrinsicContentSize
+        let labelHeight = ( textSize.width / window.frame.width ) * 30
+        let labelWidth = min(textSize.width, window.frame.width - 40)
+        let adjustedHeight = max(labelHeight, textSize.height + 20)
+        
+        toastLbl.frame = CGRect(x: 20, y: (window.frame.height - 90 ) - adjustedHeight, width: labelWidth + 20, height: adjustedHeight)
+        toastLbl.center.x = window.center.x
+        toastLbl.layer.cornerRadius = 10
+        toastLbl.layer.masksToBounds = true
+        
+        window.addSubview(toastLbl)
+        
+        UIView.animate(withDuration: 4.0, animations: {
+            toastLbl.alpha = 0
+        }) { (_) in
+            toastLbl.removeFromSuperview()
+        }
+         
+    }
+}
+extension String {
+    func attributedStringWithColor(_ strings: [String], color: UIColor, characterSpacing: UInt? = nil) -> NSAttributedString {
+        let attributedString = NSMutableAttributedString(string: self)
+        
+        for string in strings {
+            let range = (self as NSString).range(of: string)
+            attributedString.addAttribute(NSAttributedString.Key.foregroundColor, value: color, range: range)
+        }
+
+        guard let characterSpacing = characterSpacing else {return attributedString}
+
+        attributedString.addAttribute(NSAttributedString.Key.kern, value: characterSpacing, range: NSRange(location: 0, length: attributedString.length))
+
+        return attributedString
+    }
+}
+func ryb(x:CGFloat,y:CGFloat,height:CGFloat,width:CGFloat,r:String,yv:String,b:String,ry:String,yb:String,br:String,c1:String,c2:String,c3:String,viewbg:UIView) -> UIView
+{
+    print("viewbg",viewbg,"y",y,"height",height,"x",x,"r",r)
+    var rimg = UIView()
+    let yimg = UIView()
+    let bimg = UIView()
+    var rval = r ?? ""
+    var yval = yv ?? ""
+    var bval = b ?? ""
+    var ryval = ry ?? ""
+    var ybval = yb ?? ""
+    var brval = br ?? ""
+    var c1val = c1 ?? ""
+    var c2val = c2 ?? ""
+    var c3val = c3 ?? ""
+    
+    var RYBView = UIStackView()
+ 
+    rimg.backgroundColor = .systemRed
+    rimg.layer.cornerRadius = 5
+    rimg.clipsToBounds = true
+    rimg.heightAnchor.constraint(equalToConstant: height).isActive = true
+    
+    yimg.backgroundColor = .yellow
+    yimg.layer.cornerRadius = 5
+    yimg.clipsToBounds = true
+    yimg.heightAnchor.constraint(equalToConstant: height).isActive = true
+    
+    bimg.backgroundColor = colorcode.bgcolor
+    bimg.layer.cornerRadius = 5
+    bimg.clipsToBounds = true
+    bimg.clipsToBounds = true
+    bimg.heightAnchor.constraint(equalToConstant: height).isActive = true
+    bimg.translatesAutoresizingMaskIntoConstraints = false
+    
+    RYBView = UIStackView(arrangedSubviews: [rimg, yimg,bimg])
+    RYBView.axis = .horizontal
+    RYBView.distribution = .fillEqually
+    RYBView.spacing = 15
+    RYBView.contentMode = .scaleAspectFit
+    RYBView.alignment = .center
+    RYBView.backgroundColor = .clear
+    RYBView.translatesAutoresizingMaskIntoConstraints = false
+    viewbg.addSubview(RYBView)
+    print("viewbg",viewbg)
+    let RYBViewtrailingConstraint = NSLayoutConstraint(item:RYBView, attribute: NSLayoutConstraint.Attribute.leading, relatedBy: NSLayoutConstraint.Relation.equal, toItem: viewbg, attribute: NSLayoutConstraint.Attribute.leading, multiplier: 1, constant: 0)
+    
+    let RYBViewtopConstraint = NSLayoutConstraint(item:RYBView, attribute: NSLayoutConstraint.Attribute.top, relatedBy: NSLayoutConstraint.Relation.equal, toItem: viewbg, attribute: NSLayoutConstraint.Attribute.top, multiplier: 1, constant: y )
+    
+    let RYBViewwidthConstraint = NSLayoutConstraint(item:RYBView, attribute: NSLayoutConstraint.Attribute.width, relatedBy: NSLayoutConstraint.Relation.equal, toItem: nil, attribute: NSLayoutConstraint.Attribute.width, multiplier: 1, constant: width)
+    
+    let RYBViewbottomConstraint = NSLayoutConstraint(item:RYBView, attribute: NSLayoutConstraint.Attribute.height, relatedBy: NSLayoutConstraint.Relation.equal, toItem: nil, attribute: NSLayoutConstraint.Attribute.height, multiplier: 1, constant:height)
+    
+    NSLayoutConstraint.activate([RYBViewtopConstraint,RYBViewtrailingConstraint,RYBViewwidthConstraint,RYBViewbottomConstraint])
+ 
+    var leadval = CGFloat()
+   var bottamval = CGFloat()
+//   if(self.view.frame.size.height > 568)
+//   {
+       leadval = 10
+       bottamval = -10
+//   }
+//   else
+//   {
+//       bottamval = -5
+//       leadval =  5
+//   }
+    var rylblvolt = UILabel()
+    rylblvolt.font = UIFont(name: "Roboto-Bold", size: 16)
+   rylblvolt.textColor = .black
+   rylblvolt.text = "RY \(ryval) V"
+   rylblvolt.textAlignment = .center
+   rylblvolt.translatesAutoresizingMaskIntoConstraints = false
+   rimg.addSubview(rylblvolt)
+   
+   let rylblvoltTopConstraint = NSLayoutConstraint(item:rylblvolt, attribute: NSLayoutConstraint.Attribute.top, relatedBy: NSLayoutConstraint.Relation.equal, toItem: yimg, attribute: NSLayoutConstraint.Attribute.top, multiplier: 1, constant:leadval)
+   
+   let rylblvoltLeadConstraint = NSLayoutConstraint(item:rylblvolt, attribute: NSLayoutConstraint.Attribute.leading, relatedBy: NSLayoutConstraint.Relation.equal, toItem:rimg, attribute: NSLayoutConstraint.Attribute.leading, multiplier: 1, constant: 5)
+   
+   let rylblvoltWidthConstraint = NSLayoutConstraint(item:rylblvolt, attribute: NSLayoutConstraint.Attribute.trailing, relatedBy: NSLayoutConstraint.Relation.equal, toItem:rimg, attribute: NSLayoutConstraint.Attribute.trailing, multiplier: 1, constant: -5)
+   
+   let rylblvoltHeightConstraint = NSLayoutConstraint(item:rylblvolt, attribute: NSLayoutConstraint.Attribute.height, relatedBy: NSLayoutConstraint.Relation.equal, toItem: nil, attribute: NSLayoutConstraint.Attribute.height, multiplier: 1, constant: 20)
+   
+   NSLayoutConstraint.activate([rylblvoltTopConstraint,rylblvoltLeadConstraint,rylblvoltWidthConstraint, rylblvoltHeightConstraint])
+   
+    var yblblvolt = UILabel()
+   yblblvolt.font = UIFont(name: "Roboto-Bold", size: 16)
+   yblblvolt.textColor = .black
+   yblblvolt.text = "YB \(ybval) V"
+   yblblvolt.textAlignment = .center
+   yblblvolt.translatesAutoresizingMaskIntoConstraints = false
+   yimg.addSubview(yblblvolt)
+   
+   let yblblvoltTopConstraint = NSLayoutConstraint(item: yblblvolt, attribute: NSLayoutConstraint.Attribute.top, relatedBy: NSLayoutConstraint.Relation.equal, toItem: yimg, attribute: NSLayoutConstraint.Attribute.top, multiplier: 1, constant:leadval)
+   
+   let yblblvoltLeadConstraint = NSLayoutConstraint(item: yblblvolt, attribute: NSLayoutConstraint.Attribute.leading, relatedBy: NSLayoutConstraint.Relation.equal, toItem: yimg, attribute: NSLayoutConstraint.Attribute.leading, multiplier: 1, constant: 5)
+   
+   let yblblvoltWidthConstraint = NSLayoutConstraint(item: yblblvolt, attribute: NSLayoutConstraint.Attribute.trailing, relatedBy: NSLayoutConstraint.Relation.equal, toItem: yimg, attribute: NSLayoutConstraint.Attribute.trailing, multiplier: 1, constant:  -5)
+   
+   let yblblvoltHeightConstraint = NSLayoutConstraint(item: yblblvolt, attribute: NSLayoutConstraint.Attribute.height, relatedBy: NSLayoutConstraint.Relation.equal, toItem: nil, attribute: NSLayoutConstraint.Attribute.height, multiplier: 1, constant: 20)
+   
+   NSLayoutConstraint.activate([yblblvoltTopConstraint,yblblvoltLeadConstraint,yblblvoltWidthConstraint, yblblvoltHeightConstraint])
+   
+    var brlblvolt = UILabel()
+   brlblvolt.font = UIFont(name: "Roboto-Bold", size: 16)
+   brlblvolt.textColor = .black
+   brlblvolt.text = "BR \(brval) V"
+   brlblvolt.textAlignment = .center
+   brlblvolt.translatesAutoresizingMaskIntoConstraints = false
+   bimg.addSubview(brlblvolt)
+   
+   let brlblvoltTopConstraint = NSLayoutConstraint(item: brlblvolt, attribute: NSLayoutConstraint.Attribute.top, relatedBy: NSLayoutConstraint.Relation.equal, toItem: bimg, attribute: NSLayoutConstraint.Attribute.top, multiplier: 1, constant: leadval)
+   
+   let brlblvoltLeadConstraint = NSLayoutConstraint(item: brlblvolt, attribute: NSLayoutConstraint.Attribute.leading, relatedBy: NSLayoutConstraint.Relation.equal, toItem: bimg, attribute: NSLayoutConstraint.Attribute.leading, multiplier: 1, constant: 5)
+   
+   let brlblvoltWidthConstraint = NSLayoutConstraint(item: brlblvolt, attribute: NSLayoutConstraint.Attribute.trailing, relatedBy: NSLayoutConstraint.Relation.equal, toItem: bimg, attribute: NSLayoutConstraint.Attribute.trailing, multiplier: 1, constant:  -5)
+   
+   let brlblvoltHeightConstraint = NSLayoutConstraint(item: brlblvolt, attribute: NSLayoutConstraint.Attribute.height, relatedBy: NSLayoutConstraint.Relation.equal, toItem: nil, attribute: NSLayoutConstraint.Attribute.height, multiplier: 1, constant: 20)
+   
+   NSLayoutConstraint.activate([brlblvoltTopConstraint,brlblvoltLeadConstraint,brlblvoltWidthConstraint, brlblvoltHeightConstraint])
+   
+    var rlblvolt = UILabel()
+   rlblvolt.font = UIFont(name: "Roboto-Bold", size: 16)
+   rlblvolt.textColor = .black
+   rlblvolt.text = "R \(rval) V"
+   rlblvolt.textAlignment = .center
+   rlblvolt.translatesAutoresizingMaskIntoConstraints = false
+   rimg.addSubview(rlblvolt)
+   
+   let rlblvoltTopConstraint = NSLayoutConstraint(item:rlblvolt, attribute: NSLayoutConstraint.Attribute.centerY, relatedBy: NSLayoutConstraint.Relation.equal, toItem:rimg, attribute: NSLayoutConstraint.Attribute.centerY, multiplier: 1, constant:0)
+   
+   let rlblvoltLeadConstraint = NSLayoutConstraint(item:rlblvolt, attribute: NSLayoutConstraint.Attribute.leading, relatedBy: NSLayoutConstraint.Relation.equal, toItem: rimg, attribute: NSLayoutConstraint.Attribute.leading, multiplier: 1, constant: 5)
+   
+   let rlblvoltWidthConstraint = NSLayoutConstraint(item:rlblvolt, attribute: NSLayoutConstraint.Attribute.trailing, relatedBy: NSLayoutConstraint.Relation.equal, toItem:rimg, attribute: NSLayoutConstraint.Attribute.trailing, multiplier: 1, constant: -5)
+   
+   let rlblvoltHeightConstraint = NSLayoutConstraint(item:rlblvolt, attribute: NSLayoutConstraint.Attribute.height, relatedBy: NSLayoutConstraint.Relation.equal, toItem: nil, attribute: NSLayoutConstraint.Attribute.height, multiplier: 1, constant: 30)
+   
+   NSLayoutConstraint.activate([rlblvoltTopConstraint,rlblvoltLeadConstraint,rlblvoltWidthConstraint, rlblvoltHeightConstraint])
+   
+    var ylblvolt = UILabel()
+   ylblvolt.font = UIFont(name: "Roboto-Bold", size: 16)
+   ylblvolt.textColor = .black
+   ylblvolt.text = "Y \(yval) V"
+   ylblvolt.textAlignment = .center
+   ylblvolt.translatesAutoresizingMaskIntoConstraints = false
+   yimg.addSubview(ylblvolt)
+   
+   let ylblvoltTopConstraint = NSLayoutConstraint(item: ylblvolt, attribute: NSLayoutConstraint.Attribute.centerY, relatedBy: NSLayoutConstraint.Relation.equal, toItem: yimg, attribute: NSLayoutConstraint.Attribute.centerY, multiplier: 1, constant:0)
+   
+   let ylblvoltLeadConstraint = NSLayoutConstraint(item:ylblvolt, attribute: NSLayoutConstraint.Attribute.leading, relatedBy: NSLayoutConstraint.Relation.equal, toItem: yimg, attribute: NSLayoutConstraint.Attribute.leading, multiplier: 1, constant: 5)
+   
+   let ylblvoltWidthConstraint = NSLayoutConstraint(item:ylblvolt, attribute: NSLayoutConstraint.Attribute.trailing, relatedBy: NSLayoutConstraint.Relation.equal, toItem:yimg, attribute: NSLayoutConstraint.Attribute.trailing, multiplier: 1, constant:  -5)
+   
+   let ylblvoltHeightConstraint = NSLayoutConstraint(item:ylblvolt, attribute: NSLayoutConstraint.Attribute.height, relatedBy: NSLayoutConstraint.Relation.equal, toItem: nil, attribute: NSLayoutConstraint.Attribute.height, multiplier: 1, constant: 30)
+   
+   NSLayoutConstraint.activate([ylblvoltTopConstraint,ylblvoltLeadConstraint,ylblvoltWidthConstraint, ylblvoltHeightConstraint])
+   
+    var blblvolt = UILabel()
+   blblvolt.font = UIFont(name: "Roboto-Bold", size: 16)
+   blblvolt.textColor = .black
+   blblvolt.text = "B \(bval) V"
+   blblvolt.textAlignment = .center
+   blblvolt.translatesAutoresizingMaskIntoConstraints = false
+   bimg.addSubview(blblvolt)
+   
+   let blblvoltTopConstraint = NSLayoutConstraint(item:blblvolt, attribute: NSLayoutConstraint.Attribute.centerY, relatedBy: NSLayoutConstraint.Relation.equal, toItem: bimg, attribute: NSLayoutConstraint.Attribute.centerY, multiplier: 1, constant:0)
+   
+   let blblvoltLeadConstraint = NSLayoutConstraint(item: blblvolt, attribute: NSLayoutConstraint.Attribute.leading, relatedBy: NSLayoutConstraint.Relation.equal, toItem: bimg, attribute: NSLayoutConstraint.Attribute.leading, multiplier: 1, constant: 5)
+   
+   let blblvoltWidthConstraint = NSLayoutConstraint(item: blblvolt, attribute: NSLayoutConstraint.Attribute.trailing, relatedBy: NSLayoutConstraint.Relation.equal, toItem: bimg, attribute: NSLayoutConstraint.Attribute.trailing, multiplier: 1, constant:  -5)
+   
+   let blblvoltHeightConstraint = NSLayoutConstraint(item: blblvolt, attribute: NSLayoutConstraint.Attribute.height, relatedBy: NSLayoutConstraint.Relation.equal, toItem: nil, attribute: NSLayoutConstraint.Attribute.height, multiplier: 1, constant: 30)
+   
+   NSLayoutConstraint.activate([blblvoltTopConstraint,blblvoltLeadConstraint,blblvoltWidthConstraint, blblvoltHeightConstraint])
+
+    var c1lblvolt = UILabel()
+   c1lblvolt.font = UIFont(name: "Roboto-Bold", size: 16)
+   c1lblvolt.textColor = .black
+   c1lblvolt.text = "C1 \(c1val) A"
+   c1lblvolt.textAlignment = .center
+   c1lblvolt.translatesAutoresizingMaskIntoConstraints = false
+   rimg.addSubview(c1lblvolt)
+   
+   let c1lblvoltTopConstraint = NSLayoutConstraint(item: c1lblvolt, attribute: NSLayoutConstraint.Attribute.bottom, relatedBy: NSLayoutConstraint.Relation.equal, toItem: rimg, attribute: NSLayoutConstraint.Attribute.bottom, multiplier: 1, constant:bottamval)
+   
+   let c1lblvoltLeadConstraint = NSLayoutConstraint(item: c1lblvolt, attribute: NSLayoutConstraint.Attribute.leading, relatedBy: NSLayoutConstraint.Relation.equal, toItem: rimg, attribute: NSLayoutConstraint.Attribute.leading, multiplier: 1, constant: 5)
+   
+   let c1lblvoltWidthConstraint = NSLayoutConstraint(item: c1lblvolt, attribute: NSLayoutConstraint.Attribute.trailing, relatedBy: NSLayoutConstraint.Relation.equal, toItem: rimg, attribute: NSLayoutConstraint.Attribute.trailing, multiplier: 1, constant: -5)
+   
+   let c1lblvoltHeightConstraint = NSLayoutConstraint(item: c1lblvolt, attribute: NSLayoutConstraint.Attribute.height, relatedBy: NSLayoutConstraint.Relation.equal, toItem: nil, attribute: NSLayoutConstraint.Attribute.height, multiplier: 1, constant: 20)
+   
+   NSLayoutConstraint.activate([c1lblvoltTopConstraint,c1lblvoltLeadConstraint,c1lblvoltWidthConstraint, c1lblvoltHeightConstraint])
+   
+    var c2lblvolt = UILabel()
+   c2lblvolt.font = UIFont(name: "Roboto-Bold", size: 16)
+   c2lblvolt.textColor = .black
+   c2lblvolt.text = "C2 \(c2val) A"
+   c2lblvolt.textAlignment = .center
+   c2lblvolt.translatesAutoresizingMaskIntoConstraints = false
+   yimg.addSubview(c2lblvolt)
+   
+   let c2lblvoltTopConstraint = NSLayoutConstraint(item:c2lblvolt, attribute: NSLayoutConstraint.Attribute.bottom, relatedBy: NSLayoutConstraint.Relation.equal, toItem: yimg, attribute: NSLayoutConstraint.Attribute.bottom, multiplier: 1, constant:bottamval)
+   
+   let c2lblvoltLeadConstraint = NSLayoutConstraint(item: c2lblvolt, attribute: NSLayoutConstraint.Attribute.leading, relatedBy: NSLayoutConstraint.Relation.equal, toItem: yimg, attribute: NSLayoutConstraint.Attribute.leading, multiplier: 1, constant: 5)
+   
+   let c2lblvoltWidthConstraint = NSLayoutConstraint(item: c2lblvolt, attribute: NSLayoutConstraint.Attribute.trailing, relatedBy: NSLayoutConstraint.Relation.equal, toItem:yimg, attribute: NSLayoutConstraint.Attribute.trailing, multiplier: 1, constant:  -5)
+   
+   let c2lblvoltHeightConstraint = NSLayoutConstraint(item:c2lblvolt, attribute: NSLayoutConstraint.Attribute.height, relatedBy: NSLayoutConstraint.Relation.equal, toItem: nil, attribute: NSLayoutConstraint.Attribute.height, multiplier: 1, constant: 20)
+   
+   NSLayoutConstraint.activate([c2lblvoltTopConstraint,c2lblvoltLeadConstraint,c2lblvoltWidthConstraint, c2lblvoltHeightConstraint])
+   
+    var c3lblvolt = UILabel()
+   c3lblvolt.font = UIFont(name: "Roboto-Bold", size: 16)
+   c3lblvolt.textColor = .black
+   c3lblvolt.text = "C3 \(c3val) A"
+   c3lblvolt.textAlignment = .center
+   c3lblvolt.translatesAutoresizingMaskIntoConstraints = false
+   bimg.addSubview(c3lblvolt)
+   let c3lblvoltTopConstraint = NSLayoutConstraint(item: c3lblvolt, attribute: NSLayoutConstraint.Attribute.bottom, relatedBy: NSLayoutConstraint.Relation.equal, toItem: bimg, attribute: NSLayoutConstraint.Attribute.bottom, multiplier: 1, constant:bottamval)
+   
+   let c3lblvoltLeadConstraint = NSLayoutConstraint(item: c3lblvolt, attribute: NSLayoutConstraint.Attribute.leading, relatedBy: NSLayoutConstraint.Relation.equal, toItem: bimg, attribute: NSLayoutConstraint.Attribute.leading, multiplier: 1, constant: 5)
+   
+   let c3lblvoltWidthConstraint = NSLayoutConstraint(item: c3lblvolt, attribute: NSLayoutConstraint.Attribute.trailing, relatedBy: NSLayoutConstraint.Relation.equal, toItem: bimg, attribute: NSLayoutConstraint.Attribute.trailing, multiplier: 1, constant:  -5)
+   
+   let c3lblvoltHeightConstraint = NSLayoutConstraint(item: c3lblvolt, attribute: NSLayoutConstraint.Attribute.height, relatedBy: NSLayoutConstraint.Relation.equal, toItem: nil, attribute: NSLayoutConstraint.Attribute.height, multiplier: 1, constant: 20)
+   
+   NSLayoutConstraint.activate([c3lblvoltTopConstraint,c3lblvoltLeadConstraint,c3lblvoltWidthConstraint, c3lblvoltHeightConstraint])
+    return RYBView
+}
+func timeFormattedarrnew(arr:NSMutableArray) -> String {
+    print("arr:",arr)
+   if(arr.count > 0)
+   {
+       var totalsec = 0
+       var totalsecf = 0
+       for i in 0..<arr.count {
+           var componentstr =  arr[i] as? String ?? "00:00"
+           totalsec = 0
+           var components: Array = componentstr.components(separatedBy: ":")
+           let hours = Int(components[0])!
+           let minutes = Int(components[1])!
+            totalsec =  Int((hours * 60 * 60) + Int(minutes * 60) )
+           
+           totalsecf = totalsecf + totalsec
+       }
+        let minutes: Int = (totalsecf / 60) % 60
+       let hours: Int = totalsecf / 3600
+       let finalval = String(format: "%02d:%02d", hours, minutes)
+       
+       return finalval
+   }
+   else{
+       return "0000"
+   }
+   
+}
+
+func flowcountnew(arr:NSMutableArray) -> String {
+   if(arr.count > 0)
+   {
+       var totalflow:Float = 0.0
+       var flow:Float = 0.0
+       for i in 0..<arr.count {
+           var componentstr =  arr[i] as? String ?? "0"
+           flow = 0
+           print("componentstr:",componentstr)
+           flow = Float(componentstr)!
+           print("flow:",flow)
+            totalflow = totalflow + flow
+       }
+        let finalval = String(format: "%.2f",totalflow)
+       
+       return finalval
+   }
+   else{
+       return "00:00"
+   }
+   
+}
+
+func levlview(x:CGFloat,y:CGFloat,height:CGFloat,width:CGFloat,lbl1name:String,lbl1value:String,lbl2name:String,lbl2value:String,viewbg:UIView) -> UIView
+{
+    print("viewbg",viewbg,"y",y,"height",height,"x",x)
+let levelview = UIView()
+ levelview.backgroundColor = .clear
+    viewbg.addSubview(levelview)
+levelview.translatesAutoresizingMaskIntoConstraints = false
+
+let levelviewtrailingConstraint = NSLayoutConstraint(item:levelview, attribute: NSLayoutConstraint.Attribute.leading, relatedBy: NSLayoutConstraint.Relation.equal, toItem: viewbg, attribute: NSLayoutConstraint.Attribute.leading, multiplier: 1, constant: 0)
+
+let levelviewtopConstraint = NSLayoutConstraint(item:levelview, attribute: NSLayoutConstraint.Attribute.top, relatedBy: NSLayoutConstraint.Relation.equal, toItem:viewbg, attribute: NSLayoutConstraint.Attribute.top, multiplier: 1, constant: y)
+
+let levelviewwidthConstraint = NSLayoutConstraint(item:levelview, attribute: NSLayoutConstraint.Attribute.width, relatedBy: NSLayoutConstraint.Relation.equal, toItem: nil, attribute: NSLayoutConstraint.Attribute.width, multiplier: 1, constant: width)
+
+let levelviewbottomConstraint = NSLayoutConstraint(item:levelview, attribute: NSLayoutConstraint.Attribute.height, relatedBy: NSLayoutConstraint.Relation.equal, toItem: nil, attribute: NSLayoutConstraint.Attribute.height, multiplier: 1, constant: height)
+
+NSLayoutConstraint.activate([levelviewtopConstraint,levelviewtrailingConstraint,levelviewwidthConstraint,levelviewbottomConstraint])
+
+var waterlevellbl = UILabel()
+waterlevellbl.backgroundColor = UIColor(red: 166/255, green: 216/255.0, blue: 237/255.0, alpha: 1.0)
+waterlevellbl.layer.borderColor = UIColor.red.cgColor
+waterlevellbl.text = lbl1name
+waterlevellbl.textColor = .black
+waterlevellbl.layer.cornerRadius = 5
+waterlevellbl.clipsToBounds = true
+waterlevellbl.textAlignment = .center
+waterlevellbl.numberOfLines = 0
+waterlevellbl.font = UIFont(name: "Roboto-Bold", size: 12)
+waterlevellbl.translatesAutoresizingMaskIntoConstraints = false
+levelview.addSubview(waterlevellbl)
+let waterlevellbltopConstraint = NSLayoutConstraint(item: waterlevellbl, attribute: NSLayoutConstraint.Attribute.top, relatedBy: NSLayoutConstraint.Relation.equal, toItem:levelview, attribute: NSLayoutConstraint.Attribute.top, multiplier: 1, constant: 5)
+
+let waterlevellblleadConstraint = NSLayoutConstraint(item: waterlevellbl, attribute: NSLayoutConstraint.Attribute.leading, relatedBy: NSLayoutConstraint.Relation.equal, toItem:viewbg, attribute: NSLayoutConstraint.Attribute.leading, multiplier: 1, constant: 5)
+
+let waterlevellblwidthConstraint = NSLayoutConstraint(item: waterlevellbl, attribute: NSLayoutConstraint.Attribute.width, relatedBy: NSLayoutConstraint.Relation.equal, toItem: nil, attribute: NSLayoutConstraint.Attribute.width, multiplier: 1, constant: (viewbg.frame.size.width/4 - 5))
+
+let waterlevellblheightConstraint = NSLayoutConstraint(item: waterlevellbl, attribute: NSLayoutConstraint.Attribute.bottom, relatedBy: NSLayoutConstraint.Relation.equal, toItem: levelview, attribute: NSLayoutConstraint.Attribute.bottom, multiplier: 1, constant: 0)
+
+NSLayoutConstraint.activate([waterlevellbltopConstraint,waterlevellblleadConstraint,waterlevellblwidthConstraint,waterlevellblheightConstraint])
+
+var waterlvlvallbl = UILabel()
+waterlvlvallbl.backgroundColor = .clear
+waterlvlvallbl.text = lbl1value
+waterlvlvallbl.layer.cornerRadius = 5
+waterlvlvallbl.clipsToBounds = true
+waterlvlvallbl.textColor = .black
+waterlvlvallbl.layer.borderWidth = 1.0
+waterlvlvallbl.layer.borderColor = UIColor.lightGray.cgColor
+waterlvlvallbl.textAlignment = .center
+waterlvlvallbl.font =  UIFont(name: "Roboto-Bold", size: 16)
+waterlvlvallbl.translatesAutoresizingMaskIntoConstraints = false
+levelview.addSubview(waterlvlvallbl)
+let waterlvlvallbltopConstraint = NSLayoutConstraint(item: waterlvlvallbl, attribute: NSLayoutConstraint.Attribute.top, relatedBy: NSLayoutConstraint.Relation.equal, toItem:levelview, attribute: NSLayoutConstraint.Attribute.top, multiplier: 1, constant: 5)
+
+let waterlvlvallblleadConstraint = NSLayoutConstraint(item: waterlvlvallbl, attribute: NSLayoutConstraint.Attribute.leading, relatedBy: NSLayoutConstraint.Relation.equal, toItem:viewbg, attribute: NSLayoutConstraint.Attribute.leading, multiplier: 1, constant: width/4 + 5)
+
+let waterlvlvallblwidthConstraint = NSLayoutConstraint(item: waterlvlvallbl, attribute: NSLayoutConstraint.Attribute.width, relatedBy: NSLayoutConstraint.Relation.equal, toItem: nil, attribute: NSLayoutConstraint.Attribute.width, multiplier: 1, constant: (width/4 - 10 ))
+
+let waterlvlvallblheightConstraint = NSLayoutConstraint(item: waterlvlvallbl, attribute: NSLayoutConstraint.Attribute.bottom, relatedBy: NSLayoutConstraint.Relation.equal, toItem: levelview, attribute: NSLayoutConstraint.Attribute.bottom, multiplier: 1, constant: 0)
+NSLayoutConstraint.activate([waterlvlvallbltopConstraint,waterlvlvallblleadConstraint,waterlvlvallblwidthConstraint,waterlvlvallblheightConstraint])
+
+var waterpercentlbl = UILabel()
+waterpercentlbl.backgroundColor = UIColor(red: 166/255, green: 216/255.0, blue: 237/255.0, alpha: 1.0)
+waterpercentlbl.layer.borderColor = UIColor.red.cgColor
+waterpercentlbl.text = lbl2name
+waterpercentlbl.textColor = .black
+waterpercentlbl.layer.cornerRadius = 5
+waterpercentlbl.clipsToBounds = true
+waterpercentlbl.textAlignment = .center
+waterpercentlbl.numberOfLines = 0
+waterpercentlbl.font =  UIFont(name: "Roboto-Bold", size: 12)
+waterpercentlbl.translatesAutoresizingMaskIntoConstraints = false
+levelview.addSubview(waterpercentlbl)
+let waterpercentlbltopConstraint = NSLayoutConstraint(item: waterpercentlbl, attribute: NSLayoutConstraint.Attribute.top, relatedBy: NSLayoutConstraint.Relation.equal, toItem:levelview, attribute: NSLayoutConstraint.Attribute.top, multiplier: 1, constant: 5)
+
+let waterpercentlblleadConstraint = NSLayoutConstraint(item: waterpercentlbl, attribute: NSLayoutConstraint.Attribute.leading, relatedBy: NSLayoutConstraint.Relation.equal, toItem:viewbg, attribute: NSLayoutConstraint.Attribute.leading, multiplier: 1, constant: width/2)
+
+let waterpercentlblwidthConstraint = NSLayoutConstraint(item: waterpercentlbl, attribute: NSLayoutConstraint.Attribute.width, relatedBy: NSLayoutConstraint.Relation.equal, toItem: nil, attribute: NSLayoutConstraint.Attribute.width, multiplier: 1, constant: (width/4))
+
+let waterpercentlblheightConstraint = NSLayoutConstraint(item: waterpercentlbl, attribute: NSLayoutConstraint.Attribute.bottom, relatedBy: NSLayoutConstraint.Relation.equal, toItem: levelview, attribute: NSLayoutConstraint.Attribute.bottom, multiplier: 1, constant: 0)
+
+NSLayoutConstraint.activate([waterpercentlbltopConstraint,waterpercentlblleadConstraint,waterpercentlblwidthConstraint,waterpercentlblheightConstraint])
+
+var waterpercentvallbl = UILabel()
+waterpercentvallbl.backgroundColor = .clear
+waterpercentvallbl.text = lbl2value
+waterpercentvallbl.layer.cornerRadius = 5
+waterpercentvallbl.clipsToBounds = true
+waterpercentvallbl.textColor = .black
+waterpercentvallbl.layer.borderWidth = 1.0
+waterpercentvallbl.layer.borderColor = UIColor.lightGray.cgColor
+waterpercentvallbl.textAlignment = .center
+waterpercentvallbl.numberOfLines = 0
+waterpercentvallbl.font =  UIFont(name: "Roboto-Bold", size: 16)
+waterpercentvallbl.translatesAutoresizingMaskIntoConstraints = false
+levelview.addSubview(waterpercentvallbl)
+let waterpercentvallbltopConstraint = NSLayoutConstraint(item: waterpercentvallbl, attribute: NSLayoutConstraint.Attribute.top, relatedBy: NSLayoutConstraint.Relation.equal, toItem:levelview, attribute: NSLayoutConstraint.Attribute.top, multiplier: 1, constant: 5)
+
+let waterpercentvallblleadConstraint = NSLayoutConstraint(item: waterpercentvallbl, attribute: NSLayoutConstraint.Attribute.trailing, relatedBy: NSLayoutConstraint.Relation.equal, toItem:viewbg, attribute: NSLayoutConstraint.Attribute.trailing, multiplier: 1, constant: -5)
+
+let waterpercentvallblwidthConstraint = NSLayoutConstraint(item: waterpercentvallbl, attribute: NSLayoutConstraint.Attribute.width, relatedBy: NSLayoutConstraint.Relation.equal, toItem: nil, attribute: NSLayoutConstraint.Attribute.width, multiplier: 1, constant: (width/4 - 15 ))
+
+let waterpercentvallblheightConstraint = NSLayoutConstraint(item: waterpercentvallbl, attribute: NSLayoutConstraint.Attribute.bottom, relatedBy: NSLayoutConstraint.Relation.equal, toItem: levelview, attribute: NSLayoutConstraint.Attribute.bottom, multiplier: 1, constant: 0)
+NSLayoutConstraint.activate([waterpercentvallbltopConstraint,waterpercentvallblleadConstraint,waterpercentvallblwidthConstraint,waterpercentvallblheightConstraint])
+
+return levelview
+}
+public func isValidMobile(mobile:String) -> Bool
+{
+    let mobileRegEx = "^(0-9){10}$"
+    let mobileTest = NSPredicate(format:"SELF MATCHES %@", mobileRegEx)
+    return mobileTest.evaluate(with: mobile)
+}
+ 
+    public func getCurrentDate() -> String{
+        
+        var currentdateval = Date().dateInTimeZone(timeZoneIdentifier: "GMT+0530", dateFormat: "yyyy-MM-dd")
+
+           let dateFormatter = DateFormatter()
+           dateFormatter.dateFormat = "yyyy-MM-dd"
+        return  String(currentdateval) //dateFormatter.string(from: currentdateval)
+        //    return currentdateval
+       }
+    
+    
+ 
