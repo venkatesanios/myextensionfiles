@@ -1,0 +1,92 @@
+//Created by mac Air New on 6/1/22.
+//  Copyright © 2022 N.S.Venkatesan. All rights reserved.
+//
+
+import Foundation
+public func gradient(frame:CGRect) -> CAGradientLayer
+{
+    let layer = CAGradientLayer()
+    layer.frame = frame
+    layer.startPoint = CGPoint(x: 0.5, y: 0.0)
+    layer.endPoint = CGPoint(x: 1.0, y: 1.0)
+    layer.colors = [
+        UIColor.cyan.cgColor, UIColor(red: 67/255, green: 198/255.0, blue: 219/255.0, alpha: 1.0).cgColor]
+    return layer
+}
+public func generateRandomColor() -> UIColor
+{
+    let redValue = CGFloat(drand48())
+    let greenValue = CGFloat(drand48())
+    let blueValue = CGFloat(drand48())
+    let randomColor = UIColor(red: redValue, green: greenValue, blue: blueValue, alpha: 1.0)
+    return randomColor
+}
+public func showToast(message: String) {
+    guard let window = UIApplication.shared.keyWindow else {
+        return
+    }
+    
+    let toastLbl = UILabel()
+    toastLbl.text = message
+    toastLbl.textAlignment = .center
+    toastLbl.font = UIFont.systemFont(ofSize: 18)
+    toastLbl.textColor = UIColor.white
+    toastLbl.backgroundColor = .green
+   // UIColor.black.withAlphaComponent(0.6)
+    toastLbl.numberOfLines = 0
+    
+    
+    let textSize = toastLbl.intrinsicContentSize
+    let labelHeight = ( textSize.width / window.frame.width ) * 30
+    let labelWidth = min(textSize.width, window.frame.width - 40)
+    let adjustedHeight = max(labelHeight, textSize.height + 20)
+    
+    toastLbl.frame = CGRect(x: 20, y: (window.frame.height - 90 ) - adjustedHeight, width: labelWidth + 20, height: adjustedHeight)
+    toastLbl.center.x = window.center.x
+    toastLbl.layer.cornerRadius = 10
+    toastLbl.layer.masksToBounds = true
+    
+    window.addSubview(toastLbl)
+    
+    UIView.animate(withDuration: 4.0, animations: {
+        toastLbl.alpha = 0
+    }) { (_) in
+        toastLbl.removeFromSuperview()
+    }
+     
+}
+public func showToastred(message: String) {
+    guard let window = UIApplication.shared.keyWindow else {
+        return
+    }
+    
+    let toastLbl = UILabel()
+    toastLbl.removeFromSuperview()
+    toastLbl.text = message
+    toastLbl.textAlignment = .center
+    toastLbl.font = UIFont.systemFont(ofSize: 18)
+    toastLbl.textColor = UIColor.white
+    toastLbl.backgroundColor = UIColor.red.withAlphaComponent(0.6)
+   // UIColor.black.withAlphaComponent(0.6)
+    toastLbl.numberOfLines = 0
+    
+    
+    let textSize = toastLbl.intrinsicContentSize
+    let labelHeight = ( textSize.width / window.frame.width ) * 30
+    let labelWidth = min(textSize.width, window.frame.width - 40)
+    let adjustedHeight = max(labelHeight, textSize.height + 20)
+    
+    toastLbl.frame = CGRect(x: 20, y: (window.frame.height - 90 ) - adjustedHeight, width: labelWidth + 20, height: adjustedHeight)
+    toastLbl.center.x = window.center.x
+    toastLbl.layer.cornerRadius = 10
+    toastLbl.layer.masksToBounds = true
+    
+    window.addSubview(toastLbl)
+    
+    UIView.animate(withDuration: 3.0, animations: {
+        toastLbl.alpha = 0
+    }) { (_) in
+        toastLbl.removeFromSuperview()
+    }
+     
+}
